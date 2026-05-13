@@ -32,9 +32,7 @@ public abstract class AMessage : IMessage
 
     public AMessage(){}
 
-    public void execute()
-    {
-    }
+    public abstract void execute();
 
     public void setRecieverModule(IModule module)
     {
@@ -46,9 +44,8 @@ public class ActivateMessage : AMessage
 {
     public ActivateMessage(): base() {}
 
-    public void execute()
+    public override void execute()
     {
-        Console.WriteLine("EXEEWIFW");
         reciever.activate();
     }
 }
@@ -57,7 +54,7 @@ public class DeactivateMessage : AMessage
 {
     public DeactivateMessage(): base() {}
 
-    public void execute()
+    public override void execute()
     {
         reciever.deactivate();
     }
@@ -71,7 +68,7 @@ public class SetValueMessage : AMessage
         this.value = value;
     }
 
-    public void execute()
+    public override void execute()
     {
         reciever.changeValue(value);
     }
@@ -121,22 +118,13 @@ public abstract class AModule : IModule
     ICentralModule? central_module;
     ModuleType module_type;
 
-    public void activate()
-    {
-    }
+    public abstract void activate();
 
-    public void deactivate()
-    {
-    }
+    public abstract void deactivate();
 
-    public void changeValue(float value)
-    {
-    }
+    public abstract void changeValue(float value);
 
-    public float getValue()
-    {
-        return -100.0f;
-    }
+    public abstract float getValue();
 
     public AModule (ModuleType module_type)
     {
@@ -176,21 +164,21 @@ public class Light : AModule
     {
         this.brightness = brightness;
     }
-    public void activate()
+    public override void activate()
     {
         Console.WriteLine("LIGHT TURNED ON");
     }
 
-    public void deactivate()
+    public override void deactivate()
     {
         Console.WriteLine("LIGHT TURNED OFF");
     }
 
-    public void changeValue(float value)
+    public override void changeValue(float value)
     {
         brightness = value;
     }
-    public float getValue() { return brightness; }
+    public override float getValue() { return brightness; }
 }
 
 public class Furnace : AModule
@@ -201,21 +189,21 @@ public class Furnace : AModule
     {
         this.temperature = temperature;
     }
-    public void activate()
+    public override void activate()
     {
         Console.WriteLine("FUENACE TURNED ON");
     }
 
-    public void deactivate()
+    public override void deactivate()
     {
         Console.WriteLine("FURNACE TURNED OFF");
     }
 
-    public void changeValue(float value)
+    public override void changeValue(float value)
     {
         temperature = value;
     }
-    public float getValue() { return temperature; }
+    public override float getValue() { return temperature; }
 }
 
 public class Program{
@@ -231,8 +219,6 @@ public class Program{
         central_module.registerNewModule(furnace);
 
         light.sendMessage(ModuleType.FURNACE, new ActivateMessage());
-
-
         
     }
 }
