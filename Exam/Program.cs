@@ -110,7 +110,8 @@ public enum ModuleType
     FURNACE,
     MOTION_DETECTOR,
     EMERGENCY_LIGHT,
-    TV
+    TV,
+    THERMOMETER
 }
 
 public abstract class AModule : IModule
@@ -201,9 +202,68 @@ public class Furnace : AModule
 
     public override void changeValue(float value)
     {
+        Console.WriteLine("REGULATING FURNACE HEAT TO " + value.ToString() + " DEGREES");
         temperature = value;
     }
     public override float getValue() { return temperature; }
+}
+
+public class Thermometer : AModule
+{
+    const float ROOM_TEMPERATURE = 20.0f;
+    float measured_temperature;
+
+    public Thermometer(float measured_temperature): base(ModuleType.THERMOMETER)
+    {
+        this.measured_temperature = measured_temperature;
+    }
+
+    public override void activate()
+    {
+        Console.WriteLine("THERMOMETER ACTIVATED");
+    }
+    public override void deactivate()
+    {
+        Console.WriteLine("THERMOMETER DEACTIVATED");
+    }
+    public override void changeValue(float value)
+    {
+        Console.WriteLine("THERMOMETER MEASURED " + value.ToString() + " DEGREES");
+        this.measured_temperature = value;
+        sendMessage(ModuleType.FURNACE, new SetValueMessage(ROOM_TEMPERATURE-measured_temperature));
+    }
+
+    public override float getValue()
+    {
+        return measured_temperature;
+    }
+}
+
+public class MotionDetector : AModule
+{
+    float motion_threshold;
+    public MotionDetector(float motion_threshold): base(ModuleType.THERMOMETER)
+    {
+        this.motion_threshold = motion_threshold;
+    }
+
+    public override void activate()
+    {
+        Console.WriteLine("MOTION DETECTER ACTIVATED");
+        sendMessage(ModuleType.LIGHT, new ActivateMessage());
+    }
+    public override void deactivate()
+    {
+        Console.WriteLine("MOTION DETECTER DEACTIVATED");
+    }
+    public override void changeValue(float value)
+    {
+        this.motion_threshold = value;
+    }
+    public override float getValue()
+    {
+        return motion_threshold;
+    }
 }
 
 public class Program{
@@ -214,11 +274,19 @@ public class Program{
 
         IModule light = new Light(0.0f);
         IModule furnace = new Furnace(20.0f);
+        IModule thermometer = new Thermometer(20.0f);
+        IModule motion_detector = new MotionDetector(0.5f);
 
         central_module.registerNewModule(light);
         central_module.registerNewModule(furnace);
+        central_module.registerNewModule(thermometer);
+        central_module.registerNewModule(motion_detector);
 
-        light.sendMessage(ModuleType.FURNACE, new ActivateMessage());
+        thermometer.changeValue(10.0f);
+        thermometer.changeValue(15.0f);
+        thermometer.changeValue(13.0f);
+
+        motion_detector.activate();
         
     }
 }
